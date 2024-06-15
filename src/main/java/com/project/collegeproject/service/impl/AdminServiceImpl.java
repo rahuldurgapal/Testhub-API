@@ -171,6 +171,10 @@ public class AdminServiceImpl implements AdminService{
                     
     }
 
-
+    @Override
+    public String getNameByEmail(String email) {
+        
+        return adminRepository.getNameByEmail(email);
+    }
     
 }

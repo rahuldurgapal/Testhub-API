@@ -105,13 +105,12 @@ public ResponseEntity<?> loginAdmin(@RequestBody Admin admin, HttpServletRequest
                                            @RequestParam("csv_file") MultipartFile file,
                                            @RequestParam("time") String time,
                                            @RequestParam("date") LocalDate date,
-                                           HttpServletRequest request) {
+                                           HttpSession session) {
 
                     // Check if admin is logged in
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("loggedInAdmin") == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Admin not logged in");
-        }
+                    if (session.getAttribute("loggedInAdmin") == null) {
+                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+                    }
 
         try {
             InputStreamReader reader = new InputStreamReader(file.getInputStream());
@@ -132,10 +131,9 @@ public ResponseEntity<?> loginAdmin(@RequestBody Admin admin, HttpServletRequest
     }
     
     @GetMapping("/test-list")
-    public ResponseEntity<TestDetailsDto> getAllTest(@RequestBody() IdRequestDto id, HttpServletRequest request) {
+    public ResponseEntity<TestDetailsDto> getAllTest(@RequestBody() IdRequestDto id, HttpSession session) {
 
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("loggedInAdmin") == null) {
+        if (session.getAttribute("loggedInAdmin") == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
 
@@ -163,16 +161,18 @@ public ResponseEntity<?> loginAdmin(@RequestBody Admin admin, HttpServletRequest
     }
     
     @GetMapping("/getStudent")
-    public ResponseEntity<List<TestTable>> getStudentByTest(@RequestParam("test_id") String id, HttpServletRequest request) {
-    	HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("loggedInAdmin") == null) {
+    public ResponseEntity<List<TestTable>> getStudentByTest(@RequestParam("test_id") String id, HttpSession session) {
+    	if (session.getAttribute("loggedInAdmin") == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     	List<TestTable> testTable = adminService.findStudentByTest(id);
     	if(testTable==null) {
     		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     	}
-    	
+    	for(TestTable table: testTable) {
+            String name = adminService.getNameByEmail(table.getApplied_student());
+            table.setName(name);
+        }
     	return ResponseEntity.ok(testTable);
     }
 

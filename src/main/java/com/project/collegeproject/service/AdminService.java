@@ -20,4 +20,6 @@ public interface AdminService {
     List<TestTable> findStudentByTest(String testId);
     String verifyToken(String token);
     Optional<AdminTable> getAdminTableByTestId(String tesId);
+    public String getNameByEmail(String email);
+
 }

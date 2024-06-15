@@ -4,13 +4,13 @@ import java.util.List;
 
 public class TestDetailsDto {
     
-    private List<Integer> test_id;
+    private List<String> test_id;
     private List<String> test_name;
     private List<String> test_date;
-    public List<Integer> getTest_id() {
+    public List<String> getTest_id() {
         return test_id;
     }
-    public void setTest_id(List<Integer> test_id) {
+    public void setTest_id(List<String> test_id) {
         this.test_id = test_id;
     }
     public List<String> getTest_name() {

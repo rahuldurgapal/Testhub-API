@@ -8,6 +8,9 @@ public class TestTable {
 	 private String result;
 	 private String status;
 	 private String response;
+	 private String name;
+
+	 
 
 	 
 
@@ -38,10 +41,11 @@ public class TestTable {
 
 	
 
+	
 	@Override
 	public String toString() {
 		return "TestTable [id=" + id + ", testId=" + testId + ", applied_student=" + applied_student + ", result="
-				+ result + ", status=" + status + ", response=" + response + "]";
+				+ result + ", status=" + status + ", response=" + response + ", name=" + name + "]";
 	}
 	public String getResponse() {
 		return response;
@@ -54,6 +58,12 @@ public class TestTable {
 	}
 	public void setTestId(String testId) {
 		this.testId = testId;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
 	}
 	 
 	 

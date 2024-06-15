@@ -17,12 +17,12 @@ public class TestDetailsTransfom {
 public TestDetailsDto transform(List<AdminTable> adminTable) {
         TestDetailsDto testDetailsDTO = new TestDetailsDto();
 
-        List<Integer> testIds = new ArrayList<>();
+        List<String> testIds = new ArrayList<>();
         List<String> testNames = new ArrayList<>();
         List<String> testDates = new ArrayList<>();
 
         for (AdminTable detail : adminTable) {
-            testIds.add(detail.getId());
+            testIds.add(detail.getTestId());
             testNames.add(detail.getTestName());
             testDates.add(detail.getDate().format(formatter));
 

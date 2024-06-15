@@ -180,6 +180,12 @@ public class AdminRepository {
       }
 
         }
-       
+        public String getNameByEmail(String email) {
+            String sql = "select name from student where email = ?";
+
+            String name = jdbcTemplate.queryForObject(sql,String.class,email);
+            return name;
+
+      } 
 
     }
