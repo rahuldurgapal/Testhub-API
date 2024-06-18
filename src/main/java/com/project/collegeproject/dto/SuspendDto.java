@@ -15,6 +15,10 @@ public class SuspendDto {
     public void setTestId(String testId) {
         this.testId = testId;
     }
+    @Override
+    public String toString() {
+        return "SuspendDto [email=" + email + ", testId=" + testId + "]";
+    }
 
     
 }

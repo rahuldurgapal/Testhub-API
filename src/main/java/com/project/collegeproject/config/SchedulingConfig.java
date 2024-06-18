@@ -20,7 +20,7 @@ public class SchedulingConfig {
     @Autowired
     private StudentServiceImpl studentServiceImpl;
 
-    @Scheduled(fixedRate = 120000) //Runs every 60 seconds
+    @Scheduled(fixedRate = 300000) //Runs every 60 seconds
     public void checkAndDeleteExpiredAdmin() {
         adminServiceImpl.deleteExpiredAdmin();
         studentServiceImpl.deleteExpiredStudent();

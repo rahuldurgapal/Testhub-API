@@ -109,17 +109,19 @@ public class StudentController {
       }
      
       @GetMapping("/auth/suspend")
-      public ResponseEntity<?> suspendStudent(SuspendDto sus, HttpServletRequest request) {
+      public ResponseEntity<?> suspendStudent(@RequestBody SuspendDto sus, HttpServletRequest request) {
 
           HttpSession session = request.getSession(false);
           if (session == null || session.getAttribute("loggedInStudent") == null) {
               return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
           }
+          System.out.println(sus);
           TestTable testTable = new TestTable();
           testTable.setStatus("suspend");
           testTable.setResult("0");
           testTable.setTestId(sus.getTestId());
           testTable.setApplied_student(sus.getEmail());
+          studentService.suspendTest(testTable);
           return new ResponseEntity<>("Response submitted successfully",HttpStatus.OK);
       }
 

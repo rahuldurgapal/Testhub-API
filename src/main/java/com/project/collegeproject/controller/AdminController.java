@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.project.collegeproject.dto.AdminTable;
-import com.project.collegeproject.dto.IdRequestDto;
 import com.project.collegeproject.dto.Question;
 import com.project.collegeproject.dto.TestDetailsDto;
 import com.project.collegeproject.dto.TestTable;
@@ -33,7 +32,7 @@ import jakarta.servlet.http.HttpSession;
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
-    
+
     @Autowired
     private AdminService adminService;
 
@@ -43,74 +42,76 @@ public class AdminController {
     @Autowired
     private TestDetailsTransfom testDetailTransform;
 
-
-    //admin registration handler and create adminId table
+    // admin registration handler and create adminId table
     @PostMapping("/auth/signup")
-    public ResponseEntity<String> saveAdmin(@RequestBody Admin admin) throws Exception{
-        
-      Optional<Admin> adminOptional = adminService.findAdminByEmail(admin.getEmail());
-      if (adminOptional.isPresent()) {
-          return new ResponseEntity<>("Admin with this email already exists.", HttpStatus.CONFLICT);
-      }
-     if(adminService.saveAdmin(admin)==1) {
+    public ResponseEntity<String> saveAdmin(@RequestBody Admin admin) throws Exception {
+
+        Optional<Admin> adminOptional = adminService.findAdminByEmail(admin.getEmail());
+        if (adminOptional.isPresent()) {
+            return new ResponseEntity<>("Admin with this email already exists.", HttpStatus.CONFLICT);
+        }
+        if (adminService.saveAdmin(admin) == 1) {
             return ResponseEntity.ok("Registration Successfull. Check Yur emial for verification link");
         }
 
-       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something went wrong in server");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something went wrong in server");
     }
-
-    
 
     @GetMapping("/verify")
     public ResponseEntity<String> verifyEmail(@RequestParam("token") String token) {
-      String result = adminService.verifyToken(token);
-      if(result.equals("Email verified Successfully")) {
-         return new ResponseEntity<>(result,HttpStatus.OK);
-      } else {
-         return new ResponseEntity<>(result,HttpStatus.BAD_REQUEST);
-      }
+        String result = adminService.verifyToken(token);
+        if (result.equals("Email verified Successfully")) {
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PostMapping("/auth/login")
-public ResponseEntity<?> loginAdmin(@RequestBody Admin admin, HttpServletRequest request) {
-    // Attempt to find the admin by email
-    Optional<Admin> optionalAdmin = adminService.findAdminByEmail(admin.getEmail());
-    
-    // Check if admin is present
-    if (optionalAdmin.isPresent()) {
-        Admin adm = optionalAdmin.get();
+    public ResponseEntity<?> loginAdmin(@RequestBody Admin admin, HttpServletRequest request) {
+        // Attempt to find the admin by email
+        Optional<Admin> optionalAdmin = adminService.findAdminByEmail(admin.getEmail());
 
-        if(!adm.isEnabled())
-         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please verify email first..");
-        
-        // Validate the password
-        if (adm.getPassword().equals(admin.getPassword())) {
+        // Check if admin is present
+        if (optionalAdmin.isPresent()) {
+            Admin adm = optionalAdmin.get();
 
-            HttpSession session = request.getSession(true);
+            if (!adm.isEnabled())
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please verify email first..");
+
+            // Validate the password
+            if (adm.getPassword().equals(admin.getPassword())) {
+
+                HttpSession session = request.getSession(true);
                 session.setAttribute("loggedInAdmin", adm);
-            return ResponseEntity.ok(adm);
+                return ResponseEntity.ok(adm);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email and password");
+            }
         } else {
+            // Admin not found
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email and password");
         }
-    } else {
-        // Admin not found
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email and password");
     }
-}
-  
-    //save test and create test_id table
+
+    // save test and create test_id table
     @PostMapping("/organized-test")
     public ResponseEntity<String> saveTest(@RequestParam("table_id") String id,
-                                           @RequestParam("test_name") String name,
-                                           @RequestParam("csv_file") MultipartFile file,
-                                           @RequestParam("time") String time,
-                                           @RequestParam("date") LocalDate date,
-                                           HttpSession session) {
+            @RequestParam("test_name") String name,
+            @RequestParam("csv_file") MultipartFile file,
+            @RequestParam("time") String time,
+            @RequestParam("date") LocalDate date,
+            HttpSession session) {
 
-                    // Check if admin is logged in
-                    if (session.getAttribute("loggedInAdmin") == null) {
-                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-                    }
+        Admin admin = (Admin) session.getAttribute("loggedInAdmin");
+        if (admin == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null); // Return UNAUTHORIZED if not logged in
+        }
+
+        // Check if admin is logged in
+        if (session.getAttribute("loggedInAdmin") == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
 
         try {
             InputStreamReader reader = new InputStreamReader(file.getInputStream());
@@ -129,54 +130,61 @@ public ResponseEntity<?> loginAdmin(@RequestBody Admin admin, HttpServletRequest
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving test data");
         }
     }
-    
-    @GetMapping("/test-list")
-    public ResponseEntity<TestDetailsDto> getAllTest(@RequestBody() IdRequestDto id, HttpSession session) {
 
-        if (session.getAttribute("loggedInAdmin") == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+    @GetMapping("/test-list/{id}")
+    public ResponseEntity<TestDetailsDto> getAllTest(@PathVariable("id") int id, HttpSession session) {
+
+        // Check if loggedInAdmin is null in session
+        Admin admin = (Admin) session.getAttribute("loggedInAdmin");
+        if (admin == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null); // Return UNAUTHORIZED if not logged in
         }
 
-    	List<AdminTable> test = adminService.getAdminTestData(id.getId());
+        // Check if id matches loggedInAdmin's id
+        if (id != admin.getId()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // Return UNAUTHORIZED if id does not match
+        }
+
+        // Fetch admin's test data
+        List<AdminTable> test = adminService.getAdminTestData(id);
         System.out.println(test);
-    	if(test==null) {
-    		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    	}
+        if (test == null || test.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build(); // Return NO_CONTENT if no data found
+        }
 
         // Transform to the desired format
         TestDetailsDto testDetailsDTO = testDetailTransform.transform(test);
 
-        return ResponseEntity.ok(testDetailsDTO);
-
+        return ResponseEntity.ok(testDetailsDTO); // Return transformed data
     }
-    
+
     @GetMapping("/question/{admin_id}/{id}")
     public ResponseEntity<String> getQuestion(@PathVariable("admin_id") int adminId, @PathVariable("id") int id) {
-    	
-    	String question = adminService.getQeustionById(adminId, id);
-    	if(question==null) {
-    		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Something went wrong in server to find question");
-    	}
-    	return ResponseEntity.ok(question);
+
+        String question = adminService.getQeustionById(adminId, id);
+        if (question == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Something went wrong in server to find question");
+        }
+        return ResponseEntity.ok(question);
     }
-    
+
     @GetMapping("/getStudent")
     public ResponseEntity<List<TestTable>> getStudentByTest(@RequestParam("test_id") String id, HttpSession session) {
-    	if (session.getAttribute("loggedInAdmin") == null) {
+        if (session.getAttribute("loggedInAdmin") == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
-    	List<TestTable> testTable = adminService.findStudentByTest(id);
-    	if(testTable==null) {
-    		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    	}
-    	for(TestTable table: testTable) {
+        List<TestTable> testTable = adminService.findStudentByTest(id);
+        if (testTable == null) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
+        for (TestTable table : testTable) {
             String name = adminService.getNameByEmail(table.getApplied_student());
             table.setName(name);
         }
-    	return ResponseEntity.ok(testTable);
+        return ResponseEntity.ok(testTable);
     }
 
-    
     @PostMapping("/auth/logout")
     public ResponseEntity<String> logoutAdmin(HttpServletRequest request) {
         HttpSession session = request.getSession(false);

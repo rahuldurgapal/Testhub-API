@@ -41,7 +41,7 @@ public class StudentServiceImpl implements StudentService {
      @Autowired
    private AdminService adminService;
 
-    private static final long TOKEN_EXPIRY_DURATION=2;
+    private static final long TOKEN_EXPIRY_DURATION=5;
     
     private Map<String, TokenService> tokenStore = new ConcurrentHashMap<>();
 
@@ -68,7 +68,7 @@ public class StudentServiceImpl implements StudentService {
 
         String toAddress = student.getEmail();
         String subject = "Please verify your email for registration";
-        String url = "http://localhost:8080/auth/verify?token=" + token;
+        String url = "http://43.205.112.178:8080/auth/verify?token=" + token;
 
         String content = "<div style=\"font-family: Arial, sans-serif; text-align: center; color: #333;\">" +
                 "<h2 style=\"color: #4CAF50;\">Hello " + student.getName() + ",</h2>" +
@@ -153,6 +153,11 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public boolean checkStudent(String testId, String email) {
         return studentRepository.checkStudent(testId, email);
+    }
+
+    @Override
+    public void suspendTest(TestTable testTable) {
+       studentRepository.suspendTest(testTable); 
     }
 
    

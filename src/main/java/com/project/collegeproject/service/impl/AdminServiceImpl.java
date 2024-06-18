@@ -36,7 +36,7 @@ public class AdminServiceImpl implements AdminService{
     @Autowired
     private JdbcTemplate jdbcTemplate;
     
-    private static final long TOKEN_EXPIRY_DURATION=2;
+    private static final long TOKEN_EXPIRY_DURATION=5;
 
     private Map<String,TokenService> tokenStore = new ConcurrentHashMap<>();
 
@@ -107,7 +107,7 @@ public class AdminServiceImpl implements AdminService{
 
         String toAddress = admin.getEmail();
         String subject = "Please verify your Email for Registration";
-        String url = "http://localhost:8080/admin/verify?token=" + token;
+        String url = "http://43.205.112.178:8080/admin/verify?token=" + token;
 
         String content = "<div style=\"font-family: Arial, sans-serif; text-align: center; color: #333;\">" +
                 "<h2 style=\"color: #4CAF50;\">Verify Your Email</h2>" +

@@ -14,5 +14,6 @@ public interface StudentService {
     public boolean checkDateExsist(String testId);
     public void saveTest(TestTable testTable);
     public boolean checkStudent(String testId, String email);
+    public void suspendTest(TestTable testTable);
     
 } 
